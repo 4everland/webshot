@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-//LocalChromeOptions Referenced from: https://github.com/puppeteer/puppeteer/issues/3938#issuecomment-475986157
+// LocalChromeOptions Referenced from: https://github.com/puppeteer/puppeteer/issues/3938#issuecomment-475986157
 var LocalChromeOptions = append(chromedp.DefaultExecAllocatorOptions[:],
 	chromedp.DisableGPU,
 	chromedp.NoSandbox,
@@ -22,4 +22,10 @@ type ScreenshotOptions struct {
 	Delay   time.Duration
 	EndTime time.Time
 	Full    bool
+}
+
+type NewTabOptions struct {
+	URL     *url.URL
+	Delay   time.Duration
+	EndTime time.Time
 }

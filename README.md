@@ -42,6 +42,16 @@ height  | int       | 1080      | Viewport height
 full    | bool      | false     | Capture full page height
 delay   | int       | 0         | Delay screenshot after page is loaded (milliseconds)
 
+```GET /raw```
+
+return raw html when window loaded
+
+Name    | Type      | Default   | Description
+----    | ----      | -------   | -----------
+url     | string    |           | Target URL (**required**), http(s):// prefix is optional
+timeout | int       | 15        | Maximum waiting time (seconds)
+delay   | int       | 0         | Delay screenshot after page is loaded (milliseconds)
+
 ## Docker
 ### Running
 ```shell

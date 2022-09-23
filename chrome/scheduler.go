@@ -1,8 +1,8 @@
 package chrome
 
 import (
+	"context"
 	"errors"
-	"net/url"
 	"sync"
 	"time"
 )
@@ -10,12 +10,6 @@ import (
 type Scheduler struct {
 	Chrome  *Chrome
 	Threads chan bool
-}
-
-type Task struct {
-	ImageCh chan []byte
-	Url     *url.URL
-	EndTime time.Time
 }
 
 var (
@@ -34,33 +28,35 @@ func NewScheduler(maxThread int, chrome *Chrome) *Scheduler {
 	return scheduler
 }
 
-func (s *Scheduler) Exec(ch chan<- []byte, o ScreenshotOptions) {
-	s.Threads <- true
+func Screenshot(o ScreenshotOptions) (b []byte, err error) {
+	scheduler.Threads <- true
+	defer func() {
+		<-scheduler.Threads
+	}()
 	if o.EndTime.Before(time.Now()) {
-		<-s.Threads
-		return
+		return nil, errors.New("time out")
 	}
 
-	b := s.Chrome.Screenshot(o)
-	if o.EndTime.After(time.Now()) {
-		ch <- b
+	b, err = scheduler.Chrome.Screenshot(scheduler.Chrome.Ctx, o)
+	if errors.Is(err, context.Canceled) {
+		return nil, errors.New("time out")
 	}
-
-	close(ch)
-
-	<-s.Threads
+	return b, nil
 }
 
-func Screenshot(o ScreenshotOptions) (b []byte, err error) {
-	ch := make(chan []byte)
-	go scheduler.Exec(ch, o)
+func RawHtml(o NewTabOptions) (b string, err error) {
 
-	select {
-	case b := <-ch:
-		return b, nil
-	case <-time.After(o.EndTime.Sub(time.Now())):
-		return b, errors.New("time out")
+	scheduler.Threads <- true
+	defer func() {
+		<-scheduler.Threads
+	}()
+	if o.EndTime.Before(time.Now()) {
+		return "", errors.New("time out")
 	}
 
+	b, err = scheduler.Chrome.RawHtml(scheduler.Chrome.Ctx, o)
+	if errors.Is(err, context.Canceled) {
+		return "", errors.New("time out")
+	}
 	return
 }
