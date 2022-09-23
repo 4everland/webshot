@@ -9,6 +9,7 @@ func Route(router *gin.Engine) *gin.Engine {
 	router.GET("ping", func(ctx *gin.Context) { ctx.String(200, "pong") })
 
 	router.GET("screenshot", api.Screenshot)
+	router.GET("raw", api.RawHtml)
 
 	return router
 }
