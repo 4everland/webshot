@@ -2,10 +2,11 @@ package chrome
 
 import (
 	"context"
+	"time"
+
 	"github.com/4everland/screenshot/lib"
 	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/chromedp"
-	"time"
 )
 
 type Chrome struct {
@@ -30,7 +31,7 @@ func NewLocalChrome(execPath, proxy string) *Chrome {
 }
 
 func (c Chrome) Screenshot(parent context.Context, o ScreenshotOptions) (b []byte, err error) {
-	timeoutCtx, cancel := context.WithTimeout(parent, o.EndTime.Sub(time.Now()))
+	timeoutCtx, cancel := context.WithTimeout(parent, time.Until(o.EndTime))
 	defer cancel()
 
 	ctx, cancel := chromedp.NewContext(timeoutCtx)
@@ -39,7 +40,7 @@ func (c Chrome) Screenshot(parent context.Context, o ScreenshotOptions) (b []byt
 	if err = chromedp.Run(ctx, chromedp.Tasks{
 		chromedp.EmulateViewport(o.Width, o.Height),
 		chromedp.Navigate(o.URL.String()),
-		chromedp.Sleep(o.Delay * time.Millisecond),
+		chromedp.Sleep(o.Delay),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			if o.Full {
 				return chromedp.FullScreenshot(&b, 100).Do(ctx)
